@@ -2,22 +2,14 @@ import os
 import json
 import sys
 
+from state import state
+
+
 def json_handler(file):
   with open(os.path.join(sys.path[0], file), 'r') as file:
       string = file.read()
       data = json.loads(string)    
   return data
-
-def get_update_count():
-    with open(os.path.join(sys.path[0], 'update_count.txt'), 'r') as file:
-        count = int(file.read())
-    return count
-
-def get_unix_stamp():
-    with open(os.path.join(sys.path[0], 'unix_stamp.txt'), 'r') as file:
-        string = file.read()
-        unix_stamp = int(json.loads(string))
-    return unix_stamp
 
 def general_aggregate(period, last_unix_stamp, n_times, get_from, push_to):
     data_hashtags = json_handler(f'data_hashtags_{get_from}.json')
@@ -90,8 +82,8 @@ def general_aggregate(period, last_unix_stamp, n_times, get_from, push_to):
     return
 
 def aggregate(period):
-    nth_update = get_update_count()
-    last_unix_stamp = get_unix_stamp()
+    nth_update = state.get("update_count")
+    last_unix_stamp = state.get("last_run_ts")
     print(f'nth update: {nth_update}')
     #daily - uses 4h data
     if nth_update % 6 == 0:     
