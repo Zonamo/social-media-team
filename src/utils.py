@@ -1,8 +1,9 @@
+from state import state
+
+import time
+
 import tweepy
 from discord import Webhook, RequestsWebhookAdapter
-
-from state import state
-import time
 from loguru import logger
 
 

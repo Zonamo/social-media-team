@@ -1,14 +1,10 @@
-import subprocess
-import sys
-from datetime import datetime
-import time
-import os
-import json
-
 from state import state
-import gspread
+from utils import log_to_discord
 
-# from utils import log_to_discord
+import time, os, json, sys
+from datetime import datetime
+
+import gspread
 from loguru import logger
 
 
@@ -29,8 +25,7 @@ def load_spreadsheet(path="data/sheet.txt", max_attempts=4, cooldown=60):
             if not last_attempt:
                 time.sleep(cooldown)
             else:
-                # log_to_discord(f"Failed loading spreadsheet {max_attempts} times - {e}")
-                pass
+                log_to_discord(f"Failed loading spreadsheet {max_attempts} times - {e}")
 
 
 def init():
@@ -39,6 +34,3 @@ def init():
         state.set("launched_before", True)
         state.set("update_count", 0)
     load_spreadsheet()
-
-
-

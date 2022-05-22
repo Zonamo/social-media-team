@@ -1,22 +1,13 @@
-from datetime import datetime, timedelta
-import time
-import sys
-
 from state import state
-from utils import get_current_ts
-
-from aggregate import aggregate
-
-from loguru import logger
-
-from utils import get_or
+from utils import get_or, get_current_ts, log_to_discord
 from backbone import CountTarget, update_data
-
+from aggregate import aggregate
 from init import init
 
+import time, sys
+from datetime import datetime, timedelta
 
-
-from utils import log_to_discord
+from loguru import logger
 
 
 PERIOD = 240 # minutes

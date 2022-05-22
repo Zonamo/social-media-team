@@ -1,17 +1,12 @@
-from datetime import datetime, time, timedelta
-import time
-import tweepy
-import json
-import os
-import sys
+from state import state
+from utils import get_or, log_to_discord, get_current_ts
 
-from utils import get_or, log_to_discord
+import time, json, os, sys
+from datetime import datetime, time, timedelta
 from enum import Enum
 
-
+import tweepy
 from loguru import logger
-from utils import get_current_ts
-from state import state
 
 
 class CountTarget(str, Enum):
