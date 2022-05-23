@@ -10,11 +10,12 @@ from loguru import logger
 
 def load_spreadsheet(path="data/sheet.txt", max_attempts=4, cooldown=60):
     logger.info('Loading spreadsheet...')
+    spreadsheet_key = json.load(open('credentials/misc.json', 'r'))["spreadsheet_key"]
     for attempt in range(max_attempts):
         last_attempt = attempt + 1 == max_attempts
         try:
-            account = gspread.service_account(filename=os.path.join(sys.path[0], "../credentials/google.json"))
-            sheet = account.open_by_key("1w4wNzx2Yk2I3knQw-VHzFll6QQpAK9aOGi90Osuguks")
+            account = gspread.service_account(filename="credentials/google.json")
+            sheet = account.open_by_key(spreadsheet_key)
             records = sheet.sheet1.get_all_records()
             with open(path, "w") as sheet_txt:
                 sheet_txt.write(json.dumps(records))

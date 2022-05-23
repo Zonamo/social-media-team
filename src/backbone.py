@@ -62,7 +62,6 @@ def tweepy_count(query, start_time, end_time, cooldown=60, max_attempts=20):
             data = client.get_recent_tweets_count(query, start_time=start_time, end_time=end_time)
             return data[-1]["total_tweet_count"]
         except Exception as e:
-            print('got error', e)
             if not last_attempt:
                 logger.error(f"Failed with {e}, retrying after {cooldown}s...")
                 time.sleep(cooldown)
