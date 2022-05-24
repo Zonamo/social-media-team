@@ -1,10 +1,12 @@
-from state import state
-
 import time
 
 import tweepy
+from lightdb import LightDB
 from discord import Webhook, RequestsWebhookAdapter
 from loguru import logger
+
+
+state = LightDB("./state.json")
 
 
 def get_current_ts():
