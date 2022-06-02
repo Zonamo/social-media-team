@@ -12,7 +12,10 @@ from loguru import logger
 MAX_LOOKBACK = timedelta(days=7) # twitter api limitation
 
 
-def load_spreadsheet(path="data/sheet.txt", max_attempts=4, cooldown=60):
+def load_spreadsheet(max_attempts=4, cooldown=60):
+    path_token = "data/sheet_tokens.txt"
+    path_nft = "data/sheet_nfts.txt"
+    path_bearer = "data/bearers.txt"
     logger.info('Loading spreadsheet...')
     spreadsheet_key = json.load(open('credentials/misc.json', 'r'))["spreadsheet_key"]
     for attempt in range(max_attempts):
@@ -20,10 +23,18 @@ def load_spreadsheet(path="data/sheet.txt", max_attempts=4, cooldown=60):
         try:
             account = gspread.service_account(filename="credentials/google.json")
             sheet = account.open_by_key(spreadsheet_key)
-            records = sheet.sheet1.get_all_records()
-            with open(path, "w") as sheet_txt:
-                sheet_txt.write(json.dumps(records))
-            logger.info(f"Done, saved to: {path}")
+            token_records = sheet.sheet1.get_all_records()
+            nft_records = sheet.worksheet("NFT Baskets").get_all_records()
+            bearer_records = sheet.worksheet("Bearer Tokens").get_all_records()
+            with open(path_token, "w") as sheet_txt:
+                sheet_txt.write(json.dumps(token_records))
+            logger.info(f"Token sheet done, saved to: {path_token}")
+            with open(path_nft, "w") as sheet_txt:
+                sheet_txt.write(json.dumps(nft_records))
+            logger.info(f"Nft sheet done, saved to: {path_nft}")
+            with open(path_bearer, "w") as sheet_txt:
+                sheet_txt.write(json.dumps(bearer_records))
+            logger.info(f"Bearer sheet done, saved to: {path_bearer}")
             break
         except Exception as e:
             logger.error(f"Failed loading spreadsheet - {e}")
@@ -50,13 +61,13 @@ def fetch():
                 end_time = start_time + timedelta(hours=4)
                 if end_time > now or now - start_time > MAX_LOOKBACK: 
                     continue
-                key = str(int(datetime.timestamp(start_time)))
+                key = str(int(datetime.timestamp(end_time)))
                 if not key in data: 
                     missing_h4.append((key, target, start_time, end_time))
 
         logger.info(f"A total of {len(missing_h4)} H4 {target.name} block(s) missing")
 
-        for (key, target, start_time, end_time) in missing_h4:
+        for (key, target, start_time, end_time) in reversed(missing_h4):
             data[key] = fetch_data(target, start_time, end_time)
             with open(f"data/{target.name}.json", "w+") as file:
                 json.dump(data, file, sort_keys=True)
