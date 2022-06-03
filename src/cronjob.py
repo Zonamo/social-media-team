@@ -1,5 +1,5 @@
 from utils import state, get_or, get_current_ts, log_to_discord
-from count import CountQuery, fetch_data
+from count import CountQuery, fetch_data, pull_items
 from aggregate import aggregate
 
 import time, os, sys, json
