@@ -50,10 +50,11 @@ def fetch():
     for target in CountQuery:
         data = dict()
         try:
-            data = json.load(open(f"data/{target.name}.json", "r"))
+            data = json.load(open(f"/Users/barungz/python/.twit_env/data/{target.name}.json", "r"))
         except: pass
 
         missing_h4 = []
+        rest_h4 = []
         for days_back in range(8):
             day = today - timedelta(days=days_back)
             for h4_start in reversed(range(0, 24, 4)):
@@ -64,12 +65,33 @@ def fetch():
                 key = str(int(datetime.timestamp(end_time)))
                 if not key in data: 
                     missing_h4.append((key, target, start_time, end_time))
+                if key in data:
+                    rest_h4.append((key, target, start_time, end_time))
 
         logger.info(f"A total of {len(missing_h4)} H4 {target.name} block(s) missing")
 
+        if len(rest_h4) != 0:
+            last_updated_key = rest_h4[0][0]
+            last_data_set = data[last_updated_key]
+            missing_items = dict()
+            for key in pull_items():
+                if key not in last_data_set:
+                    missing_items[key] = pull_items()[key]
+
+            logger.info(f"A total of {len(missing_items)} new items")
+
+            if len(missing_items) != 0:
+                for (key,target,start_time, end_time) in reversed(rest_h4):
+                    logger.info(f"Missing items fetch, Key = {key}")
+                    data[key].update(fetch_data(target, start_time, end_time, missing_items))
+                    with open(f"/Users/barungz/python/.twit_env/data/{target.name}.json", "w+") as file:
+                        json.dump(data, file, sort_keys=True)
+                    logger.info(f"Missing items appended to dataset")
+
         for (key, target, start_time, end_time) in reversed(missing_h4):
-            data[key] = fetch_data(target, start_time, end_time)
-            with open(f"data/{target.name}.json", "w+") as file:
+            logger.info(f"Key fetch = {key}")
+            data[key] = fetch_data(target, start_time, end_time, 0)
+            with open(f"/Users/barungz/python/.twit_env/data/{target.name}.json", "w+") as file:
                 json.dump(data, file, sort_keys=True)
  
 
