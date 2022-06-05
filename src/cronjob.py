@@ -15,7 +15,7 @@ MAX_LOOKBACK = timedelta(days=7) # twitter api limitation
 def load_spreadsheet(max_attempts=4, cooldown=60):
     path_token = "data/sheet_tokens.txt"
     path_nft = "data/sheet_nfts.txt"
-    path_bearer = "data/bearers.txt"
+    path_bearer = "credentials/twitter.json"
     logger.info('Loading spreadsheet...')
     spreadsheet_key = json.load(open('credentials/misc.json', 'r'))["spreadsheet_key"]
     for attempt in range(max_attempts):
@@ -26,6 +26,10 @@ def load_spreadsheet(max_attempts=4, cooldown=60):
             token_records = sheet.sheet1.get_all_records()
             nft_records = sheet.worksheet("NFT Baskets").get_all_records()
             bearer_records = sheet.worksheet("Bearer Tokens").get_all_records()
+            bearer_list = []
+            for i in bearer_records:
+                bearer_list.append(i['COUNT'])
+            bearer_data = { "bearers": bearer_list }
             with open(path_token, "w") as sheet_txt:
                 sheet_txt.write(json.dumps(token_records))
             logger.info(f"Token sheet done, saved to: {path_token}")
@@ -33,7 +37,7 @@ def load_spreadsheet(max_attempts=4, cooldown=60):
                 sheet_txt.write(json.dumps(nft_records))
             logger.info(f"Nft sheet done, saved to: {path_nft}")
             with open(path_bearer, "w") as sheet_txt:
-                sheet_txt.write(json.dumps(bearer_records))
+                sheet_txt.write(json.dumps(bearer_data))
             logger.info(f"Bearer sheet done, saved to: {path_bearer}")
             break
         except Exception as e:
