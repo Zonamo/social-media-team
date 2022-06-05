@@ -54,7 +54,7 @@ def fetch():
     for target in CountQuery:
         data = dict()
         try:
-            data = json.load(open(f"/Users/barungz/python/.twit_env/data/{target.name}.json", "r"))
+            data = json.load(open(f"data/{target.name}.json", "r"))
         except: pass
 
         missing_h4 = []
@@ -88,14 +88,14 @@ def fetch():
                 for (key,target,start_time, end_time) in reversed(rest_h4):
                     logger.info(f"Missing items fetch, Key = {key}")
                     data[key].update(fetch_data(target, start_time, end_time, missing_items))
-                    with open(f"/Users/barungz/python/.twit_env/data/{target.name}.json", "w+") as file:
+                    with open(f"data/{target.name}.json", "w+") as file:
                         json.dump(data, file, sort_keys=True)
                     logger.info(f"Missing items appended to dataset")
 
         for (key, target, start_time, end_time) in reversed(missing_h4):
             logger.info(f"Key fetch = {key}")
             data[key] = fetch_data(target, start_time, end_time, 0)
-            with open(f"/Users/barungz/python/.twit_env/data/{target.name}.json", "w+") as file:
+            with open(f"data/{target.name}.json", "w+") as file:
                 json.dump(data, file, sort_keys=True)
  
 
