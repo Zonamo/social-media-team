@@ -21,22 +21,32 @@ COUNT_QUERY_CONFIG = {
 TOKEN_COOLDOWN = 960 # seconds 
 
 
-def pull_tokens():
+def pull_items():
+    data = dict()
     to_extract = {
         "Category / Basket": "category",
         "HASHTAG": "hashtags",
         "Twitter Username": "handles"
     }
-    data = dict()
-    with open("data/sheet.txt", "r") as raw_sheet:
+    data_tokens = dict()
+    with open("data/sheet_tokens.txt", "r") as raw_sheet:
         for row in json.load(raw_sheet):
             token = row["TOKEN"]
             token_data = dict()
             for sheet_key, data_key in to_extract.items():
                 token_data[data_key] = [token.strip() for token in row[sheet_key].split(',') if token]
-            data[token] = token_data
-    return data
+            data_tokens[token] = token_data
 
+    data_nfts = dict()
+    with open("data/sheet_nfts.txt", "r") as raw_sheet:
+        for row in json.load(raw_sheet):
+            nft = row["NFT"]
+            nft_data = dict()
+            for sheet_key, data_key in to_extract.items():
+                nft_data[data_key] = [nft.strip() for nft in row[sheet_key].split(',') if nft]
+            data_nfts[nft] = nft_data
+    data = {**data_tokens, **data_nfts}
+    return data
 
 def tweepy_count(query, start_time, end_time):
     current_ts = get_current_ts()
@@ -57,21 +67,25 @@ def tweepy_count(query, start_time, end_time):
             return tweepy_count(query, start_time, end_time)
 
 
-
-def fetch_data(target, start_time, end_time): 
-    logger.info(f"Fetching {target.name} data from {start_time} to {end_time}")
+def fetch_data(target, start_time, end_time, missing): 
     data_key = COUNT_QUERY_CONFIG[target]["data_key"]
     query_prefix = COUNT_QUERY_CONFIG[target]["query_prefix"]
     data = dict()
-    for token, token_data in pull_tokens().items():
+    logger.info(f"Fetching {target.name} data from {start_time} to {end_time}")
+    if missing == 0:
+        batch = pull_items()
+    else:
+        batch = missing
+    for item, item_data in batch.items():
         counts = dict()
-        for query in token_data[data_key]:
+        for query in item_data[data_key]:
             counts[query] = tweepy_count(f"{query_prefix}{query} -is:retweet", start_time, end_time)
-        data[token] = { 
+        data[item] = { 
             "total": sum(counts.values()), 
             target.name: counts,
-            "category": token_data["category"]
+            "category": item_data["category"]
         }
-        logger.info("Data retrieved for {}: {}".format(token, str(data[token])))
+        logger.info("Data retrieved for {}: {}".format(item, str(data[item])))
     logger.info("Done")
-    return data
+    
+    return 
