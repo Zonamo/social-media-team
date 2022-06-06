@@ -1,5 +1,5 @@
 from utils import state, get_or, get_current_ts, log_to_discord
-from count import CountQuery, fetch_data
+from count import CountQuery, fetch_data, pull_items
 from aggregate import aggregate
 
 import time, os, sys, json
@@ -12,7 +12,10 @@ from loguru import logger
 MAX_LOOKBACK = timedelta(days=7) # twitter api limitation
 
 
-def load_spreadsheet(path="data/sheet.txt", max_attempts=4, cooldown=60):
+def load_spreadsheet(max_attempts=4, cooldown=60):
+    path_token = "data/sheet_tokens.txt"
+    path_nft = "data/sheet_nfts.txt"
+    path_bearer = "credentials/twitter.json"
     logger.info('Loading spreadsheet...')
     spreadsheet_key = json.load(open('credentials/misc.json', 'r'))["spreadsheet_key"]
     for attempt in range(max_attempts):
@@ -20,10 +23,22 @@ def load_spreadsheet(path="data/sheet.txt", max_attempts=4, cooldown=60):
         try:
             account = gspread.service_account(filename="credentials/google.json")
             sheet = account.open_by_key(spreadsheet_key)
-            records = sheet.sheet1.get_all_records()
-            with open(path, "w") as sheet_txt:
-                sheet_txt.write(json.dumps(records))
-            logger.info(f"Done, saved to: {path}")
+            token_records = sheet.sheet1.get_all_records()
+            nft_records = sheet.worksheet("NFT Baskets").get_all_records()
+            bearer_records = sheet.worksheet("Bearer Tokens").get_all_records()
+            bearer_list = []
+            for i in bearer_records:
+                bearer_list.append(i['COUNT'])
+            bearer_data = { "bearers": bearer_list }
+            with open(path_token, "w") as sheet_txt:
+                sheet_txt.write(json.dumps(token_records))
+            logger.info(f"Token sheet done, saved to: {path_token}")
+            with open(path_nft, "w") as sheet_txt:
+                sheet_txt.write(json.dumps(nft_records))
+            logger.info(f"Nft sheet done, saved to: {path_nft}")
+            with open(path_bearer, "w") as sheet_txt:
+                sheet_txt.write(json.dumps(bearer_data))
+            logger.info(f"Bearer sheet done, saved to: {path_bearer}")
             break
         except Exception as e:
             logger.error(f"Failed loading spreadsheet - {e}")
@@ -43,6 +58,7 @@ def fetch():
         except: pass
 
         missing_h4 = []
+        rest_h4 = []
         for days_back in range(8):
             day = today - timedelta(days=days_back)
             for h4_start in reversed(range(0, 24, 4)):
@@ -50,14 +66,35 @@ def fetch():
                 end_time = start_time + timedelta(hours=4)
                 if end_time > now or now - start_time > MAX_LOOKBACK: 
                     continue
-                key = str(int(datetime.timestamp(start_time)))
+                key = str(int(datetime.timestamp(end_time)))
                 if not key in data: 
                     missing_h4.append((key, target, start_time, end_time))
+                if key in data:
+                    rest_h4.append((key, target, start_time, end_time))
 
         logger.info(f"A total of {len(missing_h4)} H4 {target.name} block(s) missing")
 
-        for (key, target, start_time, end_time) in missing_h4:
-            data[key] = fetch_data(target, start_time, end_time)
+        if len(rest_h4) != 0:
+            last_updated_key = rest_h4[0][0]
+            last_data_set = data[last_updated_key]
+            missing_items = dict()
+            for key in pull_items():
+                if key not in last_data_set:
+                    missing_items[key] = pull_items()[key]
+
+            logger.info(f"A total of {len(missing_items)} new items")
+
+            if len(missing_items) != 0:
+                for (key,target,start_time, end_time) in reversed(rest_h4):
+                    logger.info(f"Missing items fetch, Key = {key}")
+                    data[key].update(fetch_data(target, start_time, end_time, missing_items))
+                    with open(f"data/{target.name}.json", "w+") as file:
+                        json.dump(data, file, sort_keys=True)
+                    logger.info(f"Missing items appended to dataset")
+
+        for (key, target, start_time, end_time) in reversed(missing_h4):
+            logger.info(f"Key fetch = {key}")
+            data[key] = fetch_data(target, start_time, end_time, 0)
             with open(f"data/{target.name}.json", "w+") as file:
                 json.dump(data, file, sort_keys=True)
  
