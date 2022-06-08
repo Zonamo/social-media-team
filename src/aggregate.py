@@ -19,9 +19,13 @@ def aggregate():
                 bucket_end = min(len(stamps), idx + bucket)
                 for other_idx in range(idx + 1, bucket_end):
                     for token in aggregated.keys():
-                        aggregated[token]["total"] += data[stamps[other_idx]][token]["total"]
-                        for query in aggregated[token][target].keys():
-                            aggregated[token][target][query] += data[stamps[other_idx]][token][target][query]
+                        #skips if token got deleted from sheet
+                        try:
+                            aggregated[token]["total"] += data[stamps[other_idx]][token]["total"]
+                            for query in aggregated[token][target].keys():
+                                aggregated[token][target][query] += data[stamps[other_idx]][token][target][query]
+                        except:
+                            continue
                 aggregated_data[stamps[bucket_end - 1]] = aggregated
             with open(f"data/data_{target}_{timeframe}.json", "w+") as file:
                 json.dump(aggregated_data, file, sort_keys=True)    
