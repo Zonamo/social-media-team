@@ -77,6 +77,9 @@ def fetch_data(target, start_time, end_time, missing):
     else:
         batch = missing
     for item, item_data in batch.items():
+        if len(item_data[data_key]) == 0:
+            logger.info(f"No query available for {item}, skipping for now")
+            continue
         counts = dict()
         for query in item_data[data_key]:
             counts[query] = tweepy_count(f"{query_prefix}{query} -is:retweet", start_time, end_time)
