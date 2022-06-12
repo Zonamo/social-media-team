@@ -91,4 +91,4 @@ def fetch_data(target, start_time, end_time, missing):
         logger.info("Data retrieved for {}: {}".format(item, str(data[item])))
     logger.info("Done")
     
-    return 
+    return data
