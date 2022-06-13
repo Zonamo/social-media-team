@@ -2,3 +2,4 @@ tweepy
 gspread
 discord
 lightdb
+loguru
