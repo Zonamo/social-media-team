@@ -29,7 +29,7 @@ def pull_items():
         "Twitter Username": "handles"
     }
     data_tokens = dict()
-    with open("data/sheet_tokens.txt", "r") as raw_sheet:
+    with open(os.path.join(sys.path[0], "../data/sheet_tokens.txt"), "r") as raw_sheet:
         for row in json.load(raw_sheet):
             token = row["TOKEN"]
             token_data = dict()
@@ -38,7 +38,7 @@ def pull_items():
             data_tokens[token] = token_data
 
     data_nfts = dict()
-    with open("data/sheet_nfts.txt", "r") as raw_sheet:
+    with open(os.path.join(sys.path[0], "../data/sheet_nfts.txt"), "r") as raw_sheet:
         for row in json.load(raw_sheet):
             nft = row["NFT"]
             nft_data = dict()
@@ -50,7 +50,7 @@ def pull_items():
 
 def tweepy_count(query, start_time, end_time):
     current_ts = get_current_ts()
-    with open("credentials/twitter.json", "r") as file:
+    with open(os.path.join(sys.path[0], "../credentials/twitter.json"), "r") as file:
         tokens = json.load(file)["bearers"]
         token = next((t for t in tokens if get_or(0, f"ready_at_{t}") < current_ts), None)
         if token is None:
