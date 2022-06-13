@@ -14,7 +14,7 @@ def get_current_ts():
 
 
 def log_to_discord(message, cooldown=60):
-    hook_url = json.load("credentials/misc.json")["discord_hook_url"]
+    hook_url = json.load(os.path.join(sys.path[0], "../credentials/misc.json"))["discord_hook_url"]
     logger.info(f"Critical error - {message} - relaying to Discord...")
     try:
         webhook = Webhook.from_url(hook_url, adapter=RequestsWebhookAdapter())
