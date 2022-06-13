@@ -9,7 +9,7 @@ def aggregate():
         logger.info(f"Aggregating {target} data")
         data = dict()
         try:
-            data = json.load(open(f"data/{target}.json", "r"))
+            data = json.load(open(os.path.join(sys.path[0],f"../data/{target}.json"), "r"))
         except: pass
         stamps = list(data.keys())
         for timeframe, bucket in [("4h", 1), ("day", 6), ("week", 42), ("month", 1260)]:
@@ -27,6 +27,6 @@ def aggregate():
                         except:
                             continue
                 aggregated_data[stamps[bucket_end - 1]] = aggregated
-            with open(f"data/data_{target}_{timeframe}.json", "w+") as file:
+            with open(os.path.join(sys.path[0], f"../data/data_{target}_{timeframe}.json"), "w+") as file:
                 json.dump(aggregated_data, file, sort_keys=True)    
         logger.info("Done")
