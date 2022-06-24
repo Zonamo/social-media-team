@@ -28,7 +28,7 @@ def load_spreadsheet(max_attempts=4, cooldown=60):
             bearer_records = sheet.worksheet("Bearer Tokens").get_all_records()
             bearer_list = []
             for i in bearer_records:
-                bearer_list.append(i['COUNT'])
+                bearer_list.append(i['F'])
             bearer_data = { "bearers": bearer_list }
             with open(os.path.join(sys.path[0], path_token), "w") as sheet_txt:
                 sheet_txt.write(json.dumps(token_records))
